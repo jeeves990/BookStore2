@@ -1,6 +1,6 @@
 
 from BookStoreGui import *
-
+#from MyInheritanceObjects import *
 
 
 '''
@@ -16,7 +16,6 @@ def setTitle(appendage=""):
     win.title(appName +str(appendage))
 
 setTitle()
-#win.wm_title("Book Store Inventory")
 
 win['bd']=2
 #win['relief'] = RIDGE
@@ -28,9 +27,10 @@ winWidth = 750
 '''
 #win.resizable(0,0)
 bookStoreTopFrame = BookStoreTopFrameClass(win)
+bookStoreTopFrame['height'] = 20
 bookStoreTopFrame.grid(row=0, column=0, sticky='nwe', columnspan=4)
 
-'''
+'''  
     the following two values: win.winfo_screenwidth() and 
                               win.winfo_screenheight()
         are the value in pixels of the monitor screen
@@ -59,6 +59,8 @@ mainFrame.lineNumbers.redraw()
 
 setColRowWeight(mainFrame)
 
+#bookStoreTopFrame.grid_rowconfigure(0, weight=3)
+
 print('win.winfo_geometry: ' +str(win.winfo_geometry))
 
 #win.size() returns a tuple: column count, row count
@@ -69,17 +71,21 @@ print('win_size: ' +str(win.size()))
 print('win.winfo_width() :' +str(win.winfo_width()))
 print('win.winfo_height() :' +str(win.winfo_height()))
 
-
-
 '''
-    win.geometry('%dx%d+%d+%d' % (winWidth, winHeight, x, y))  ## this makes the window remain the same regardless of the widgets added.
+    win.geometry('%dx%d+%d+%d' % (winWidth, winHeight, x, y))  
+        ## this makes the window remain the same regardless of the widgets added.
 
-    win.geometry('+%d+%d' % (x, y))  ## this is nice. It permits tkinter to adjust the size of the main window to accomodate the widgets present
+    win.geometry('+%d+%d' % (x, y))  
+        ## this is nice. It permits tkinter to adjust the size of the main window 
+        to accomodate the widgets present
 '''
 win.geometry('+%d+%d' % (x, y))  ## this is nice. It permits tkinter to adjust the size of the main window
 
 
     
+win.mainloop()
+
+
 '''
 whatever_you_do = "Whatever you do will be insignificant, but it is very important that you do it.\n(Mahatma Gandhi)"
 msg = Message(win, text = whatever_you_do)
@@ -87,6 +93,3 @@ msg.config(bg='lightgreen', font=('times', 24, 'italic'))
 msg.bind('<Motion>',motion)
 msg.grid(row=0, column=0)
 '''
-win.mainloop()
-
-

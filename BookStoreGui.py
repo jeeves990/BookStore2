@@ -1,10 +1,11 @@
 
 
-import tkinter as tk
-###from tkinter import *
 from MyInheritanceObjects import CustomText, FontChooser
+#, isInputInteger, isInput_a_year
+import tkinter as tk
+from tkinter import *
 import tkinter.messagebox as MSGBOX
-
+import re
 
 txObjBackground = 'cyan'
 
@@ -20,10 +21,33 @@ def setColRowWeight(obj):
 
 
 
+def countWords_n_string(str):
+
+    # Here we are removing the spaces from start and end,
+    # and breaking every word whenever we encounter a space
+    # and storing them in a list. The len of the list is the
+    # total count of words.
+    return (len(str.strip().split(" ")))
+
+
+def countWords(longS):
+    lst = (longS.strip().splitlines(longS))
+    i = 0
+    for ln in lst:
+        newlst = re.split(r'[-,\s]\s*',ln)
+        i += len(newlst)
+
+
+def countChars(s):
+    i = 0
+    for ln in s:
+        i += 1
+    return i
+
 """
 The BookStoreGui is comprised at the top level of three components: 
         BookStoreTopFrameClass,
-        BookStoreMainFrameClass and
+        BookStoreMainFrameClass,
         BookStoreStatusBarClass.
 These elements are arranged vertically in the order written above
 
@@ -78,17 +102,17 @@ class BookStoreMainFrameClass(tk.Canvas):
         return
 
     def bldPopupMenu(self):
-        '''
+
         self.popupMenu = tk.Menu(self.txObj)
         self.popupMenu.add_command(label="Copy", command = self.doCopy)
-        self.bldmainfr
+
         self.popupMenu.add_command(label="Cut", command = self.doCut)
         self.popupMenu.add_command(label="Paste", command=self.doPaste)
         self.popupMenu.add_separator()
         self.popupMenu.add_command(label="Select All", command=self.doSelectAll)
         self.popupMenu.add_separator()
         self.popupMenu.add_command(label = "Choose Font", command = self.doSelectFont)
-        '''
+
         return
     
     def bindRightMouseBtnToPopupMenu(self):
@@ -261,6 +285,11 @@ class BookStoreMainFrameClass(tk.Canvas):
         #print(self.txObj.index(tk.INSERT))
         self.sbar.setPosition(self.txObj.index(tk.INSERT))
 
+    def countCharacters(self):
+        i = 0
+        for ln in self.txObj:
+            i += len(ln)
+        self.sbar.setCharCount(i)
 
     def bldTextBoxFrame(self, sbar, win):
         self.txBoxWidth = int(float(self['width'])/6/10)
@@ -364,8 +393,19 @@ class BookStoreMainFrameClass(tk.Canvas):
         s1 = self.txObj.count("1.0", "end", "lines")
         tpl=int(float(self.txObj.index('end-1c').split('\n\r')[0]))
         print(format("lines: {}".format( tpl)))
-        ##self.sbarclass.lineCntLbl.text = tpl
-        
+
+        #self.txObj.get('1.0', "end") returns all the characters in the Text.txObj
+        s = self.txObj.get('1.0', "end")
+        charcnt = countChars(s)
+        print(format("Characters: {}".format(charcnt)))
+        self.sbar.setCharCount(charcnt)
+
+        # to get work count take the s string above and split it on \r\n
+        wordcount = countWords_n_string(s)
+
+        self.sbar.wordCntVar.set(wordcount)
+        self.sbar.setWordCount(wordcount)
+
         self.sbar.lineCntVar.set(tpl)
         self.sbar.setLineCount(tpl)
 
@@ -380,7 +420,7 @@ class BookStoreMainFrameClass(tk.Canvas):
         btnFrameHeight=int(self['height'])-4
         btnFrameWidth=int(self['width'])-4
         
-        btnFrame = tk.Frame(ownerFrame, height=btnFrameHeight, width=btnFrameWidth, relief=tk.RAISED)
+        btnFrame = tk.LabelFrame(ownerFrame, height=btnFrameHeight, width=btnFrameWidth, relief=tk.RAISED)
 
         btnHeight = int(float(ownerFrame['height'])/6/10)
         btnWidth = 15
@@ -390,9 +430,11 @@ class BookStoreMainFrameClass(tk.Canvas):
         upd_Button = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE, text='Update')
         deleButton = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE, text='Delete')
 
-        updCntBtn = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE, text='Update Count', command=self.doUpdateCount)
+        updCntBtn = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE,
+                              text='Update Count', command=self.doUpdateCount)
       
-        closButton = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE, text='Close', command=self.doQuit)
+        closButton = tk.Button(btnFrame, height=btnHeight, width=btnWidth, relief=tk.RIDGE,
+                               text='Close', command=self.doQuit)
         ##closButton.bind("<Button-1>", self.doQuit)
 
 
@@ -448,48 +490,85 @@ class  BookStoreTopFrameClass(tk.Canvas):
         #self['relief']=RAISED
         self['bg']='#cccccc'
         self.bldCapsNEntries()
+        self.grid_rowconfigure(0, weight = 3)
+
+        self.grid_rowconfigure(1, weight=3)
 
     def  bldCapsNEntries(self):
         lblHtValue= 1
-        lblWdValue=8
+        lblWdValue=20
         lblBgValue=self['bg']
-        self.ttlLbl = tk.Label(self, width=lblWdValue, justify=tk.RIGHT,
-                               height=lblHtValue, text='Title', font='Times 10 bold ', bg=lblBgValue)
-        self.yearLbl = tk.Label(self, width=lblWdValue,
-                                height=lblHtValue, text='Year', font='Times  10 bold', bg=lblBgValue)
-        self.authLbl = tk.Label(self, width=lblWdValue,
-                                height=lblHtValue,text='Author', font='Times  10 bold', bg=lblBgValue)
-        self.ISBNLbl = tk.Label(self, width=lblWdValue,
-                                height=lblHtValue,text='ISBN', font='Times 10 bold', bg=lblBgValue)
+        lblBdrWd = 3
+        lblBrdRelief = 'ridge'
+        lblFont = 'Times 10 bold'
+
+        editframe = tk.Frame(self)
+        self.ttlLbl = tk.Label(editframe, width=lblWdValue, justify=tk.RIGHT,
+                               height=lblHtValue,
+                               text='Title', font=lblFont,
+                               bg=lblBgValue,
+                               borderwidth=lblBdrWd,
+                               relief=lblBrdRelief)
+        self.yearLbl = tk.Label(editframe, width=lblWdValue,
+                                height=lblHtValue, text='Year', font=lblFont,
+                                bg=lblBgValue,
+                                borderwidth=lblBdrWd,
+                                relief=lblBrdRelief)
+
+        self.authLbl = tk.Label(editframe, width=lblWdValue,
+                                height=lblHtValue,text='Author', font=lblFont,
+                                bg=lblBgValue,
+                                borderwidth = lblBdrWd,
+                                relief = lblBrdRelief)
+
+        self.ISBNLbl = tk.Label(editframe, width=lblWdValue,
+                                height=lblHtValue,text='ISBN', font=lblFont,
+                                bg=lblBgValue,
+                                borderwidth = lblBdrWd,
+                                relief = lblBrdRelief)
 
 
         self.ttlLbl.grid(row=0, column=0)
-        self.yearLbl.grid(row=1, column=0)
-        self.authLbl.grid(row=0, column=2)
-        self.ISBNLbl.grid(row=1, column=2)
+        self.ttlLbl.grid_rowconfigure(0, weight = 1)
 
-        entryHtValue = 1.5
-        entryWdValue = 16
+        self.authLbl.grid(row=1, column=0)
+        self.authLbl.grid_rowconfigure(0, weight=1)
+
+        self.yearLbl.grid(row=2, column=0)
+        self.yearLbl.grid_rowconfigure(0, weight = 1)
+
+        self.ISBNLbl.grid(row=3, column=0)
+        self.ISBNLbl.grid_rowconfigure(0, weight = 1)
+
+        entryHtValue = 1
+        entryWdValue = 45
         entryBgValue = '#ead1dc'
-        self.ttlEntry = tk.Entry(self, width=entryWdValue, justify=tk.LEFT, text='Title',
+        self.ttlEntry = tk.Entry(editframe, width=entryWdValue, justify=tk.LEFT, text='Title',
                                font='Times 10', bg=entryBgValue)
-        self.authEntry = tk.Entry(self, width=entryWdValue, justify=tk.LEFT, text='Author', font='Times 10',
+
+        self.authEntry = tk.Entry(editframe, width=entryWdValue, justify=tk.LEFT, text='Author',
+                                font='Times 10',
                                 bg=entryBgValue)
-        self.yearEntry = tk.Entry(self, width=entryWdValue, justify=tk.RIGHT, text='Year', font='Times  10',
+
+        #check4year = self.register(isInput_a_year)
+        self.yearEntry = tk.Entry(editframe, width=entryWdValue, justify=tk.LEFT, text='Year',
+                                font='Times  10',
                                 bg=entryBgValue)
-        self.ISBNEntry = tk.Entry(self, width=entryWdValue,justify=tk.RIGHT, text='ISBN', font='Times 10',
+                                #validatecommand = (check4year, '%S'))
+
+        self.ISBNEntry = tk.Entry(editframe, width=entryWdValue,justify=tk.LEFT, text='ISBN',
+                                font='Times 10',
                                 bg=entryBgValue)
 
         self.ttlEntry.grid(row=0, column=1)
-        self.yearEntry.grid(row=1, column=1)
-        self.authEntry.grid(row=0, column=3)
-        self.ISBNEntry.grid(row=1, column=3)
+        self.authEntry.grid(row=1, column=1)
 
-        setColRowWeight(self)      
-        #for i in range(4):
-        #    self.columnconfigure(i, weight=1)
-        #    self.rowconfigure(i, weight=1)
+        self.yearEntry.grid(row=2, column=1)
+        self.ISBNEntry.grid(row=3, column=1)
 
+        setColRowWeight(self)
+        self.grid_rowconfigure(0, weight = 2 )
+        editframe.grid(row = 0, column =0)
         self.ttlEntry.focus_set()
 
 #%%  BookStoreStatusBarClass(tk.Canvas):
@@ -509,25 +588,35 @@ class BookStoreStatusBarClass(tk.Canvas):
         lblWdValue=6
 
         self.wordCntVar = tk.StringVar()
-        self.wordCntCap = tk.Label(self, width=lblWdValue, height=lblHtValue, background= 'light blue', relief=tk.RAISED, text='Words: ')
-        self.wordCntLbl = tk.Label(self, width=lblWdValue, height=lblHtValue, background= 'cyan', relief = tk.SUNKEN, textvariable=self.wordCntVar)
+        self.wordCntCap = tk.Label(self, width=lblWdValue, height=lblHtValue, background= 'light blue',
+                                   relief=tk.RAISED, text='Words: ')
+        self.wordCntLbl = tk.Label(self, width=lblWdValue, height=lblHtValue, background= 'cyan',
+                                   relief = tk.SUNKEN, textvariable=self.wordCntVar)
 
         self.charCntVar = tk.StringVar()
-        self.charCntCap = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'light blue', relief = tk.RAISED, text='Chars: ')
-        self.charCntLbl = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'cyan', relief=tk.SUNKEN, textvariable=self.charCntVar)
+        self.charCntCap = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'light blue',
+                                   relief = tk.RAISED, text='Chars: ')
+        self.charCntLbl = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'cyan',
+                                   relief=tk.SUNKEN, textvariable=self.charCntVar)
         
         self.lineCntVar = tk.StringVar()
-        self.lineCntCap = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'light blue', relief=tk.RAISED, text='Lines: ')
-        self.lineCntLbl = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'cyan', relief=tk.SUNKEN, textvariable=self.lineCntVar)
+        self.lineCntCap = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'light blue',
+                                   relief=tk.RAISED, text='Lines: ')
+        self.lineCntLbl = tk.Label(self, width=lblWdValue, height= lblHtValue, background= 'cyan',
+                                   relief=tk.SUNKEN, textvariable=self.lineCntVar)
 
         self.positionVar = tk.StringVar()
-        self.positionCap = tk.Label(self, width=lblWdValue+3, height= lblHtValue, background= 'light blue', relief=tk.RAISED, text='Position: ')
-        self.positionLbl = tk.Label(self, width=lblWdValue+3, height= lblHtValue, background= 'cyan', relief=tk.SUNKEN, textvariable=self.positionVar)
+        self.positionCap = tk.Label(self, width=lblWdValue+3, height= lblHtValue, background= 'light blue',
+                                    relief=tk.RAISED, text='Position: ')
+        self.positionLbl = tk.Label(self, width=lblWdValue+3, height= lblHtValue, background= 'cyan',
+                                    relief=tk.SUNKEN, textvariable=self.positionVar)
       
 
         self.mousePosVar = tk.StringVar()
-        self.mousePosCap = tk.Label(self,  width=lblWdValue +6, height= lblHtValue, background= 'light blue', relief=tk.RAISED, text='Mouse Position: ')
-        self.mousePosLbl =  tk.Label(self, width=lblWdValue+6, height= lblHtValue, background= 'cyan', relief=tk.SUNKEN, textvariable=self.mousePosVar)
+        self.mousePosCap = tk.Label(self,  width=lblWdValue +6, height= lblHtValue, background= 'light blue',
+                                    relief=tk.RAISED, text='Mouse Position: ')
+        self.mousePosLbl =  tk.Label(self, width=lblWdValue+6, height= lblHtValue, background= 'cyan',
+                                     relief=tk.SUNKEN, textvariable=self.mousePosVar)
 
         self.wordCntLbl.config(justify=tk.RIGHT)
         self.charCntLbl.config(justify=tk.RIGHT)
@@ -568,17 +657,14 @@ class BookStoreStatusBarClass(tk.Canvas):
 
     def setCharCount(self, cnt):
         self.charCntVar.set(str(cnt))
-        
 
     def setLineCount(self, cnt):
         a = self.lineCntVar.get()
         self.lineCntVar.set(str(cnt))
 
-
-    def setwordCount(self, cnt):
+    def setWordCount(self, cnt):
         self.wordCntVar.set(str(cnt))
 
-        
     def setPosition(self, pos):
         self.positionVar.set(str(pos))
         
