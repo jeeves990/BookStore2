@@ -1,6 +1,5 @@
 
 from BookStoreGui import *
-#from MyInheritanceObjects import *
 
 
 '''
@@ -8,35 +7,41 @@ print('hello')
 print(type(tk))
 print('goodbye')
 '''
-win = tk.Tk()
+root = tk.Tk()
 
 appName = "Book Store Inventory: "
 
 def setTitle(appendage=""):
-    win.title(appName +str(appendage))
+    root.title(appName +str(appendage))
 
 setTitle()
 
-win['bd']=2
-#win['relief'] = RIDGE
-win.wm_attributes("-topmost", 1)
+root['bd']=2
+#root.wm_attributes("-topmost", 1)
 winHeight = 550
 winWidth = 750
 '''
     win.resizable(0,0) makes the window fixed in geometry: width and height
 '''
-#win.resizable(0,0)
-bookStoreTopFrame = BookStoreTopFrameClass(win)
+
+mainfrm = BookStoreBackFrameClass(root) 
+#mainfrm.resizable(0,0)
+mainfrm['height'] = winHeight
+mainfrm['width'] = winWidth
+
+
+
+bookStoreTopFrame = BookStoreTopFrameClass(mainfrm)
 bookStoreTopFrame['height'] = 20
 bookStoreTopFrame.grid(row=0, column=0, sticky='nwe', columnspan=4)
 
 '''  
-    the following two values: win.winfo_screenwidth() and 
-                              win.winfo_screenheight()
+    the following two values: mainfrm.winfo_screenwidth() and 
+                              mainfrm.winfo_screenheight()
         are the value in pixels of the monitor screen
 '''
-x = win.winfo_screenwidth() /2 - (winWidth /2)
-y = win.winfo_screenheight() /2 - (winHeight / 2)
+x = mainfrm.winfo_screenwidth() /2 - (winWidth /2)
+y = mainfrm.winfo_screenheight() /2 - (winHeight / 2)
 '''
     the following values: bookStoreTopFrame.winfo_reqwidth() and
                           bookStoreTopFrame.winfo_reqheight()   
@@ -44,46 +49,47 @@ y = win.winfo_screenheight() /2 - (winHeight / 2)
 '''
 w = bookStoreTopFrame.winfo_reqwidth()
 h = bookStoreTopFrame.winfo_reqheight()
-#setColRowWeight(win) this seems to make the weights non-sticky
+#setColRowWeight(mainfrm) this seems to make the weights non-sticky
 
 
-statusBar=BookStoreStatusBarClass(win)
+statusBar=BookStoreStatusBarClass(mainfrm)
 statusBar.grid(row=8, column=0, sticky='ew')
 
-print('win_size: ' +str(win.size()))
-mainFrame=BookStoreMainFrameClass(win, statusBar)
-mainFrame.grid(row=1, column=0,sticky='new')
-mainFrame.loadDummyData()
+print('win_size: ' +str(mainfrm.size()))
+midFrame=BookStoreMidFrameClass(mainfrm, statusBar)
+midFrame.grid(row=1, column=0,sticky='new')
+midFrame.loadDummyData()
 
-mainFrame.lineNumbers.redraw()
+midFrame.lineNumbers.redraw()
 
-setColRowWeight(mainFrame)
+root['menu'] = BuildMainMenu(root, midFrame)
 
-#bookStoreTopFrame.grid_rowconfigure(0, weight=3)
+mainfrm.grid(row=0, column=0)
+setColRowWeight(midFrame)
 
-print('win.winfo_geometry: ' +str(win.winfo_geometry))
+print('mainfrm.winfo_geometry: ' +str(mainfrm.winfo_geometry))
 
-#win.size() returns a tuple: column count, row count
-print('win_size: ' +str(win.size()))
+#mainfrm.size() returns a tuple: column count, row count
+print('win_size: ' +str(mainfrm.size()))
 '''
-    win.winfo_width() and win.winfo_height() return the width and height of the dialog in pixels
+    mainfrm.winfo_width() and mainfrm.winfo_height() return the width and height of the dialog in pixels
 '''
-print('win.winfo_width() :' +str(win.winfo_width()))
-print('win.winfo_height() :' +str(win.winfo_height()))
+print('mainfrm.winfo_width() :' +str(mainfrm.winfo_width()))
+print('mainfrm.winfo_height() :' +str(mainfrm.winfo_height()))
 
 '''
-    win.geometry('%dx%d+%d+%d' % (winWidth, winHeight, x, y))  
+    mainfrm.geometry('%dx%d+%d+%d' % (winWidth, winHeight, x, y))  
         ## this makes the window remain the same regardless of the widgets added.
 
-    win.geometry('+%d+%d' % (x, y))  
+    mainfrm.geometry('+%d+%d' % (x, y))  
         ## this is nice. It permits tkinter to adjust the size of the main window 
         to accomodate the widgets present
 '''
-win.geometry('+%d+%d' % (x, y))  ## this is nice. It permits tkinter to adjust the size of the main window
+root.geometry('+%d+%d' % (x, y))  ## this is nice. It permits tkinter to adjust the size of the main window
 
 
     
-win.mainloop()
+root.mainloop()
 
 
 '''
